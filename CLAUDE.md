@@ -4,21 +4,35 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository state
 
-This repository currently contains no application source code, build tooling, dependency
-manifest, or test suite. The tracked files are:
+This repository now contains a single-file web game:
 
-- `README.md` and `readme.md` — two separate, case-differing placeholder files, each holding
-  auto-generated "Unique Commit" stub content (a random string and a date). They are not
-  documentation of a real project.
-- Git history consists entirely of auto-generated "Auto commit for 115691 - N" commits.
+- `index.html` — a self-contained 2048 game (HTML + CSS + vanilla JS, no build step, no
+  dependencies). Open it directly in a browser, or serve the directory with any static file
+  server (e.g. `python3 -m http.server`).
+- `README.md` and `readme.md` — two separate, case-differing placeholder files left over from
+  the repo's initial auto-generated scaffolding. They hold "Unique Commit" stub content, not
+  real documentation, and are unrelated to the game.
+- Earlier git history includes auto-generated "Auto commit for 115691 - N" commits.
 
-There are no commands to build, lint, or test anything, because no such tooling exists in the
-repo. Do not assume a framework, language, or project layout that isn't actually present —
-check the current file listing (`git ls-files`) before making claims about structure.
+There is no build, lint, or test tooling — `index.html` is plain HTML/CSS/JS run directly by
+the browser. Do not assume a framework or bundler is present.
 
-## Working in this repository
+## Architecture (index.html)
 
-If you are asked to add real functionality here, treat it as greenfield work: there is no
-existing architecture, conventions, or module layout to conform to. Establish and document
-whatever structure the new work needs, and update this file to reflect it once real code
-exists.
+Everything lives in one file, structured top to bottom as:
+
+- **Styles**: CSS custom properties (`--bg`, `--board-bg`, tile colors) drive the theme; the
+  board uses two overlapping grids — `.grid-bg` (static empty-cell background) and
+  `.tile-layer` (absolutely-positioned tiles animated via `top`/`left` transitions).
+- **Game state**: a single IIFE holds `grid` (4x4 array of tile objects or `null`), `score`,
+  `best` (persisted in `localStorage` under `2048-best`), and flags (`won`, `over`,
+  `keepPlaying`).
+- **Core loop**: `move(dir)` walks the grid in the right traversal order for the direction
+  (`traverse`/`vector` helpers), slides/merges tiles, then calls `addRandomTile()` and
+  `render()`. Win/loss is detected after each move (`isGameOver`) and shown via the
+  `.overlay` element.
+- **Input**: arrow keys / WASD via `keydown`, plus touch swipe detection on the board
+  container for mobile.
+
+When editing the game, keep it dependency-free and in a single file unless the user asks for a
+build setup — that's a deliberate choice for a small, self-contained deliverable.
